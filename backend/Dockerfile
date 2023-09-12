@@ -1,4 +1,4 @@
-FROM node:16.3.0-alpine
+FROM node:16.15.0-alpine
 
 ENV NEW_RELIC_NO_CONFIG_FILE=true
 ENV NR_NATIVE_METRICS_NO_BUILD=true
@@ -6,11 +6,20 @@ ENV NR_NATIVE_METRICS_NO_BUILD=true
 # Create app directory
 WORKDIR /usr/src/app
 
-# Install app dependencies
+COPY ./../types ./types
+
+RUN cd /usr/src/app/types && npm ci
+
 COPY . .
-RUN cd packages/Upgrade && npm ci
-ENV NODE_OPTIONS=--max_old_space_size=4096
+
+WORKDIR /usr/src/app/backend
+
+RUN cp -R ../types packages/Upgrade
+RUN ["npm", "run", "install:all"]
 RUN ["npm", "run", "build:upgrade"]
 
+RUN chown -R node:node /usr/src/app
+
 EXPOSE 3030
-CMD ["npm", "run", "--silent", "production:upgrade"]
+# CMD ["npm", "run", "--silent", "production:upgrade"]
+CMD ["npm", "run", "production:upgrade"]

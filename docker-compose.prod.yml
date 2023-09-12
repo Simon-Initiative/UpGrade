@@ -1,0 +1,57 @@
+services:
+  frontend:
+    build:
+      context: .
+      # dockerfile: ./frontend/dev.Dockerfile
+      dockerfile: ./frontend/Dockerfile
+    #    image: upgrade-frontend:latest
+    user: "node"
+    environment:
+      - NODE_ENV=production
+    # volumes:
+    #   - ./frontend:/usr/src/app/frontend
+    # networks:
+    #   - localdev
+    ports:
+      - "4200:4200"
+
+  backend:
+    build:
+      context: .
+      # dockerfile: ./backend/dev.Dockerfile
+      dockerfile: ./backend/Dockerfile
+    #    image: upgrade-backend:latest
+    user: "node"
+    env_file:
+      - ./upgrade.env
+    environment:
+      - NODE_ENV=production
+    # volumes:
+    #   - ./backend:/usr/src/app/backend
+    # networks:
+    #   - localdev
+    ports:
+      - "3030:3030"
+    depends_on:
+      - "postgres"
+
+  postgres:
+    image: postgres:alpine
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      # networks:
+      #   - localdev
+      # ports:
+      # - "5433:5432"
+      # - "5433:5433"
+    volumes:
+      - upgradedbdata:/var/lib/postgresql/data
+
+volumes:
+  upgradedbdata:
+
+    # networks:
+    #   localdev:
+    #     driver: "bridge"
